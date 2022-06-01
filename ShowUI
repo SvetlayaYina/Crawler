@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="UTF-8" />
+<meta name="keywords" content=" " />
+<meta name="description" content=" " />
+<title>搜尋結果</title>
+</head>
+<style type="text/css">
+    body {background-color:#EAF4F4;}
+</style>
+<script>
+    var main;
+    window.onload =function() {
+        let cid = location.href.split("=")[1][0];
+        let courseName = decodeURI(location.href).split("n=")[1];
+        fetch("control.php?act=getInfo&cid=" + cid)
+        .then(function(resp){
+            console.log(resp);
+            return resp.json();
+        })
+        .then(function(json) {
+            if (json) {
+                let tableStr = "<table border=1><tr>搜尋結果<td>";
+                tableStr += "title</td><td>";
+                tableStr += "content</td><td>";
+                tableStr += "floor</td><td>";
+                tableStr += "comment</td></tr>";
+                var arrDcard=[];//紀錄title
+                var nowRow;
+                //如果一樣:push進去
+                for(let row of json){
+                         arrDcard[row['title']]=[];
+                        //當跟前一個不一樣的時候就把東西push進去
+                        //放title,再創一個陣列放其他的(內文，評論，樓層)
+                        if(row==0||row['title']!=row-1['title']){
+                            //並且創一個新的二維把東西放進去
+                            var fc=[row['content'],row['floor'],row['comment']];//fc:內文，評論，樓層
+                            arrDcard[row['title']].push(fc[0],fc[1],fc[2]);//把內文，評論，樓層放進去
+
+                            console.log(arrDcard[row['title']][0]);
+                            //console.log(arrDcard);
+                            nowRow=row['title'];//紀錄現在的標題
+                        }
+                        else{
+                            var fc=[row['content'],row['floor'],row['comment']];//內文，評論，樓層
+                            arrDcard[nowRow].push(fc[0],fc[1],fc[2]);//把內文，評論，樓層放進剛剛紀錄的標題陣列裡
+                        }
+
+                }
+                tableStr+="<tr><td>"+nowRow+"</td><td>"+arrDcard[nowRow][0]+"</td><td>"+arrDcard[nowRow][1]+"</td><td>"+arrDcard[nowRow][2]+"</td></tr>";
+
+                /*for (let i=0;i<arrDcard.length;i++) {//放進表格裡
+                        //把東西加進表格裡
+                        tableStr += "<tr><td>"+ arrDcard[i];
+                        tableStr+="<table><tr><td>"+arrDcard[i][0]+"</td><td>"+arrDcard[i][1]+"</td><td>"+arrDcard[i][2]+"</td></tr></table>";
+                        tableStr += "</td></tr>";
+                }*/
+                tableStr += "</table>";
+                document.getElementById("main").innerHTML = tableStr;
+            }
+        })
+    }
+</script>
+
+<body>
+<div id="main"></div>
+</body>
+</html>
